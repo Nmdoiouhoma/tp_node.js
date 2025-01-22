@@ -1,24 +1,19 @@
-// Charger les variables d'environnement depuis le fichier .env
 require('dotenv').config();
-
-const express = require('express');
-const cors = require('cors');
+const app = require('express')();
 const bodyParser = require('body-parser');
-const { Sequelize, DataTypes } = require('sequelize');
-const app = express();
-const port = process.env.PORT || 80;
+const DbConfigurator = require('./config/Database');
 
-const { UserController } = require('./controller/userController');
-const { Database } = require('./config/database')
 
-// Middleware pour analyser les corps de requêtes en JSON
-app.use(cors());
-app.use(bodyParser.json());
+const start = async () => {
+  await new DbConfigurator().connect();
+  app.use(bodyParser.json());
 
-app.use(UserController)
-// Route GET pour récupérer des utilisateur 
-const syncDb = async () => {
-  await sequelize.sync({ alter: true });
+  app.use('*', (req, res) => {
+    res.status(404).json('Not found');
+  });
+  app.listen(process.env.PORT, () => {
+    console.info(`Application est en cours sur le port ${process.env.PORT}`);
+  });
 };
-syncDb();
 
+start();
